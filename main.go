@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -73,14 +75,31 @@ func isArrayContains(arr []string, str string) bool {
 	return false
 }
 
+func readIgnoreContainer(filename string) []string {
+	file, err := os.Open(filename)
+	if err != nil {
+		return []string{}
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	ignoreList := []string{}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		ignoreList = append(ignoreList, line)
+	}
+
+	return ignoreList
+}
+
 func main() {
 	flag.Parse()
 	cli, err := client.NewClientWithOpts(client.WithVersion("1.37"))
 	if err != nil {
 		panic(err)
 	}
-	adminContainer := []string{"/rancher-agent", "/node_exporter", "/dcgm-epxporter"}
-
+	adminContainer := readIgnoreContainer("containerIgnore")
 	go func() {
 		for {
 			containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
