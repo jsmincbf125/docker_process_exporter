@@ -32,13 +32,15 @@ func main() {
 	adminContainer := []string{"/rancher-agent", "/node_exporter", "/dcgm-epxporter"}
 
 	for _, container := range containers {
-		if isArrayContains(adminContainer, container.Names[0]) {
+		if !isArrayContains(adminContainer, container.Names[0]) {
+			processes, _ := cli.ContainerTop(context.Background(), container.ID, []string{"au"})
 			fmt.Println(container.Names)
-		} else {
-			process, _ := cli.ContainerTop(context.Background(), container.ID, []string{""})
-			fmt.Println(container.Names)
-			fmt.Println(process)
+			fmt.Println(processes.Titles)
+			for _, process := range processes.Processes {
+				fmt.Println(process)
+			}
 		}
+		fmt.Println("")
 
 	}
 }
