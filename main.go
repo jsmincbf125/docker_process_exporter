@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -93,7 +92,6 @@ func main() {
 				if !isArrayContains(adminContainer, container.Names[0]) {
 					processes, _ := cli.ContainerTop(context.Background(), container.ID, []string{"au"})
 					for _, process := range processes.Processes {
-						fmt.Println(process)
 						cpuUsage, _ := strconv.ParseFloat(process[2], 64)
 						memUsage, _ := strconv.ParseFloat(process[3], 64)
 						vszUsage, _ := strconv.ParseFloat(process[4], 64)
