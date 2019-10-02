@@ -99,7 +99,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	adminContainer := readIgnoreContainer("containerIgnore")
+	adminContainer := readIgnoreContainer("/go/conf/containerIgnore")
 	go func() {
 		for {
 			containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
