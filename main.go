@@ -33,28 +33,28 @@ var (
 		Name:      "process_cpu_usage",
 		Help:      "process_cpu_usage[%]",
 	},
-		[]string{"container", "user", "pid", "tty", "stat", "start", "time", "command"},
+		[]string{"image", "container", "user", "pid", "tty", "stat", "start", "time", "command"},
 	)
 	processMemUsage = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "process_memory_usage",
 		Help:      "process_memory_usage[%]",
 	},
-		[]string{"container", "user", "pid", "tty", "stat", "start", "time", "command"},
+		[]string{"image", "container", "user", "pid", "tty", "stat", "start", "time", "command"},
 	)
 	processVsz = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "process_vsz",
 		Help:      "process_vsz[MB]",
 	},
-		[]string{"container", "user", "pid", "tty", "stat", "start", "time", "command"},
+		[]string{"image", "container", "user", "pid", "tty", "stat", "start", "time", "command"},
 	)
 	processRss = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "process_rss",
 		Help:      "process_rss[MB]",
 	},
-		[]string{"container", "user", "pid", "tty", "stat", "start", "time", "command"},
+		[]string{"image", "container", "user", "pid", "tty", "stat", "start", "time", "command"},
 	)
 )
 
@@ -110,16 +110,17 @@ func main() {
 			for _, container := range containers {
 				if !isArrayContains(adminContainer, container.Names[0]) {
 					processes, _ := cli.ContainerTop(context.Background(), container.ID, []string{"au"})
+					imageName := container.Image
 					for _, process := range processes.Processes {
 						cpuUsage, _ := strconv.ParseFloat(process[2], 64)
 						memUsage, _ := strconv.ParseFloat(process[3], 64)
 						vszUsage, _ := strconv.ParseFloat(process[4], 64)
 						rssUsage, _ := strconv.ParseFloat(process[5], 64)
 
-						processCPUUsage.WithLabelValues(container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(cpuUsage)
-						processMemUsage.WithLabelValues(container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(memUsage)
-						processVsz.WithLabelValues(container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(vszUsage)
-						processRss.WithLabelValues(container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(rssUsage)
+						processCPUUsage.WithLabelValues(imageName, container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(cpuUsage)
+						processMemUsage.WithLabelValues(imageName, container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(memUsage)
+						processVsz.WithLabelValues(imageName, container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(vszUsage)
+						processRss.WithLabelValues(imageName, container.Names[0], process[0], process[1], process[6], process[7], process[8], process[9], process[10]).Set(rssUsage)
 
 					}
 				}
