@@ -77,12 +77,13 @@ type myExporter struct {
 	containers     []types.Container
 	adminContainer []string
 	gpuInfos       []string
+	ctx            context.Context
 }
 
 func (e myExporter) setMetrics() {
 	for _, container := range e.containers {
 		if !isIgnorableContains(e.adminContainer, container.Names[0]) {
-			processes, _ := e.cli.ContainerTop(context.Background(), container.ID, []string{"au"})
+			processes, _ := e.cli.ContainerTop(e.ctx, container.ID, []string{"au"})
 			for _, process := range processes.Processes {
 				cpuUsage, _ := strconv.ParseFloat(process[2], 64)
 				memUsage, _ := strconv.ParseFloat(process[3], 64)
@@ -152,15 +153,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	ctx := context.Background()
 	adminContainer := readIgnoreContainer("/go/conf/containerIgnore")
 
 	go func() {
 		for {
-			containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+			containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
 			if err != nil {
 				panic(err)
 			}
-			exporter := myExporter{cli, containers, adminContainer, gpuInfos}
+			exporter := myExporter{cli, containers, adminContainer, gpuInfos, ctx}
 			exporter.setMetrics()
 			time.Sleep(60 * time.Second)
 		}
